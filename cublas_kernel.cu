@@ -111,7 +111,7 @@ int matmul_c_stream(const int m,  cuDoubleComplex *A_, cuDoubleComplex *B_,  con
     cublasOperation_t transb=CUBLAS_OP_N;
 
     // cublas setting variebles
-    cublasHandle_t cublasH[nnn];
+    cublasHandle_t cublasH;
     cudaStream_t stream[nstream];
 
 //     printf("solving %d %dx%d matrices multiply with %d streams.\n",nmat,m,m, nstream);
@@ -143,6 +143,7 @@ int matmul_c_stream(const int m,  cuDoubleComplex *A_, cuDoubleComplex *B_,  con
     
 //     // step 0: allocate device memory
 //     printf("allocate device memory.\n");
+    CUBLAS_CHECK(cublasCreate(&cublasH));
     CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&d_A), sizeof(cuDoubleComplex) * lda * m * nmat));
     CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&d_B), sizeof(cuDoubleComplex) * lda * m * nmat));
     CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&d_C), sizeof(cuDoubleComplex) * lda * m * nmat));
@@ -178,17 +179,16 @@ int matmul_c_stream(const int m,  cuDoubleComplex *A_, cuDoubleComplex *B_,  con
     printf("begin inner loop %d in %d \n",i,nnn);
     int ist = i%nstream;
     printf("begin cublasCreate\n");
-    CUBLAS_CHECK(cublasCreate(&cublasH[i]));
 
-    CUBLAS_CHECK(cublasSetStream(cublasH[i], stream[ist]));
+    CUBLAS_CHECK(cublasSetStream(cublasH, stream[ist]));
 
     /* step 5: compute matmul  */
     printf("begin cublasZgemm\n");
-    CUBLAS_CHECK(cublasZgemm(cublasH[i], transa, transb, m, m, m, 
+    CUBLAS_CHECK(cublasZgemm(cublasH, transa, transb, m, m, m, 
         &alpha, &d_A[i*m*lda], lda, &d_B[i*m*lda], lda, &beta, &d_C[i*m*lda], lda));
 
-    CUBLAS_CHECK(cublasDestroy(cublasH[i]));
     }
+    CUBLAS_CHECK(cublasDestroy(cublasH));
     for (int i = 0; i< nstream; i++){
         CUDA_CHECK(cudaEventRecord(stop[i],stream[i]));
     }
