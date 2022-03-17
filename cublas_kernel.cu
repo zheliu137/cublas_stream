@@ -149,8 +149,8 @@ int matmul_c_stream(const int m,  cuDoubleComplex *A_, cuDoubleComplex *B_,  con
     CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&d_C), sizeof(cuDoubleComplex) * lda * m * nmat));
 
     for (int i=0; i < nstream; i++ ) {
-      CUDA_CHECK(cudaStreamCreate(&stream[i]));
-    //   CUDA_CHECK(cudaStreamCreateWithFlags(&stream[i], cudaStreamNonBlocking));
+    //   CUDA_CHECK(cudaStreamCreate(&stream[i]));
+      CUDA_CHECK(cudaStreamCreateWithFlags(&stream[i], cudaStreamNonBlocking));
     }
 
 //     /* step 3: Copy Host To Device */
