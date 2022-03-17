@@ -11,19 +11,21 @@
 
 // void run_eig_wrapper_(const int N, cuDoubleComplex *x);
 //void print_matrix(const int &m, const int &n, const cuDoubleComplex *A, const int &lda);
-int  cusolver_c_stream(int N,cuDoubleComplex *A,int nmat);
+int  matmul_c_stream(int N,cuDoubleComplex *A,cuDoubleComplex *B,int nmat);
 void createRandoms(int size, double *randomArray);
 //void cusolver(int N); 
 //void test(); 
 
 int main (int argc, char* argv[]){
     cuDoubleComplex *A;
-    int N=10;
+    cuDoubleComplex *B;    
+    int N=1000;
     if (argc > 1 ){
       N = strtol(argv[1],nullptr,0);
     }
     int nmat = 1;
     A = (cuDoubleComplex *)malloc(pow(N,2)*sizeof(cuDoubleComplex)*nmat);
+    B = (cuDoubleComplex *)malloc(pow(N,2)*sizeof(cuDoubleComplex)*nmat);
     //A = (double *)malloc(pow(N,2)*sizeof(double));
     int size=N; 
     double *rand1;
@@ -46,6 +48,7 @@ int main (int argc, char* argv[]){
     for (int j=0;j<N;j++){
       //A[IDX2F(i,j,N)] = {double(i*j+1), double(3*i*j*(i-j)-j+i)};
       A[IDX2F(i,j,N)] = {double(i+j+1.0), 10.0*(i-j)};
+      B[IDX2F(i,j,N)] = {double(i+j+1.0), 10.0*(i-j)};
       //A[IDX2F(i,j,N)] = float(i*j);
       //A[IDX2F(i,j,N)] = {1.0,1.2};
       //printf("%f\n",A[IDX2F(i,j,N)]);
@@ -54,6 +57,7 @@ int main (int argc, char* argv[]){
 
     printf("Success.\n");
 
-    cusolver_c_stream( N, A, nmat);
+    //cusolver_c_stream( N, A, nmat);
+    matmul_c_stream( N, A, B, nmat);
 
     }
